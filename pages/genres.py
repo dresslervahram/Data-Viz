@@ -1,5 +1,5 @@
 import dash
-from dash import html, dcc, Input, Output, callback
+from dash import html, dcc, Input, Output, State, callback
 import dash_bootstrap_components as dbc
 import plotly.express as px
 import plotly.graph_objects as go
@@ -17,6 +17,13 @@ layout = html.Div([
             dbc.CardHeader(html.B("Controls")),
             dbc.CardBody([
                 html.Label("Select Genres", className="fw-semibold small mb-1"),
+
+                dbc.ButtonGroup([
+                    dbc.Button("Select All", id="g-select-all", size="sm",
+                               color="primary", outline=True, n_clicks=0),
+                    dbc.Button("Clear All",  id="g-clear-all",  size="sm",
+                               color="secondary", outline=True, n_clicks=0),
+                ], className="mb-2 w-100"),
                 dcc.Dropdown(id="g-genres",
                              options=[{"label": g, "value": g} for g in ALL_GENRES],
                              value=TOP8, multi=True, className="mb-3"),
@@ -55,6 +62,22 @@ layout = html.Div([
         ], md=9),
     ], className="g-3"),
 ])
+
+
+@callback(
+    Output("g-genres", "value"),
+    Input("g-select-all", "n_clicks"),
+    Input("g-clear-all",  "n_clicks"),
+    State("g-genres", "value"),
+    prevent_initial_call=True,
+)
+def cb_select_all(select_clicks, clear_clicks, current):
+    from dash import ctx
+    if ctx.triggered_id == "g-select-all":
+        return ALL_GENRES
+    elif ctx.triggered_id == "g-clear-all":
+        return []
+    return current
 
 
 @callback(
